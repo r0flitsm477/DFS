@@ -239,37 +239,48 @@ public class DFS {
             JsonObject jo = ja.get(i).getAsJsonObject();
             String name = jo.get("name").getAsString();
             if (name.equals(fileName)) {
-                JsonArray pageArray = jo.get("page").getAsJsonArray();
-                int index = 0;
+                JsonArray pageArray = jo.get("pages").getAsJsonArray();
                 if(pageNumber != -1) {
-                	index = pageNumber-1;
                 	for(int j = 0; j < pageArray.size(); j++) {
-                		
+                		if(pageArray.get(j).getAsJsonObject().getAsJsonPrimitive("number").getAsInt() == (pageNumber)) {
+                			long guidGet = pageArray.get(j).getAsJsonObject().getAsJsonPrimitive("guid").getAsLong();
+                			
+                			long guid = md5("Metadata");
+                			ChordMessageInterface peer = chord.locateSuccessor(guid);
+                			InputStream is = peer.get(guidGet);
+                			
+                			ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+                			int r = is.read();
+                			while (r != 0) {
+                				byteBuffer.write(r);
+                				r = is.read();
+                			}
+                			byteBuffer.flush();
+                			is.close();
+                			result = byteBuffer.toByteArray();
+                		}
                 	}
                 }
                 else {
-                	index = pageArray.size()-1;
+                	int j = pageArray.size()-1;
+                	long guidGet = pageArray.get(j).getAsJsonObject().getAsJsonPrimitive("guid").getAsLong();
+                	ChordMessageInterface peer = chord.locateSuccessor(guidGet);
+                	InputStream is = peer.get(guidGet);
+                	
+                	ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        			int r = is.read();
+        			while (r != 0) {
+        				byteBuffer.write(r);
+        				r = is.read();
+        			}
+        			byteBuffer.flush();
+        			is.close();
+        			result = byteBuffer.toByteArray();
                 }
-                    
-                
-                JsonObject page = pageArray.get(index).getAsJsonObject();
-                int size = page.get("size").getAsInt();
-                long pageGuid = page.get("guid").getAsLong();
-
-                ChordMessageInterface peer = chord.locateSuccessor(pageGuid);
-                InputStream is = peer.get(pageGuid);
-                result = new byte[size];
-
-                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                int r = is.read(result, 0, result.length);
-                buffer.write(result, 0, r);
-                buffer.flush();
-                is.close();
             }
         }
         return result;
     }
-    
     
     public byte[] tail(String fileName) throws Exception
     {
