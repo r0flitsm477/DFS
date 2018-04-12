@@ -228,8 +228,7 @@ public class DFS {
     
     public byte[] read(String fileName, int pageNumber) throws Exception {
         // TODO: read pageNumber from fileName
-        
-        JsonParser jp = new JsonParser();
+    	JsonParser jp = new JsonParser();
         JsonReader jr = readMetaData();
         JsonObject metaData = (JsonObject)jp.parse(jr);
         JsonArray ja = metaData.getAsJsonArray("metadata");
@@ -242,10 +241,16 @@ public class DFS {
             if (name.equals(fileName)) {
                 JsonArray pageArray = jo.get("page").getAsJsonArray();
                 int index = 0;
-                if(pageNumber != -1)
-                    index = pageNumber-1;
-                else
-                    index = pageArray.size()-1;
+                if(pageNumber != -1) {
+                	index = pageNumber-1;
+                	for(int j = 0; j < pageArray.size(); j++) {
+                		
+                	}
+                }
+                else {
+                	index = pageArray.size()-1;
+                }
+                    
                 
                 JsonObject page = pageArray.get(index).getAsJsonObject();
                 int size = page.get("size").getAsInt();
