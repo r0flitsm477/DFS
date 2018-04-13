@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.file.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -137,26 +138,18 @@ public class DFS {
     public String ls() throws Exception {
         System.out.println("======= list =======");
         String listOfFiles = "";
-     
-        JsonReader jr = readMetaData();
         
-        jr.beginObject();
-        jr.skipValue();
-        jr.beginArray();
-        while (jr.hasNext()) {
-            jr.beginObject();
-            while (jr.hasNext()) {
-                String name = jr.nextName();
-                if (name.equals("name")) {
-                    listOfFiles += jr.nextString()+"\n";
-                } else {
-                    jr.skipValue();
-                }
-            }
-            jr.endObject();
+        JsonParser jp = new JsonParser();
+        JsonReader jr = readMetaData();
+        JsonObject metaData = (JsonObject)jp.parse(jr);
+        JsonArray ja = metaData.getAsJsonArray("metadata");
+        
+        for(int i = 0; i < ja.size(); i++) {
+        	JsonObject jo = ja.get(i).getAsJsonObject();
+        	JsonObject jf = jo.getAsJsonObject("file");
+        	listOfFiles += jf.getAsJsonPrimitive("name") + "\n";
         }
-        jr.endArray();
-        jr.endObject();
+        
         return listOfFiles;
     }
 
@@ -308,7 +301,7 @@ public class DFS {
                 break;
             }
         }
-
+        
         if (toAppend != null) {
             int maxSize = toAppend.get("pageSize").getAsInt();
             JsonArray pageArray = toAppend.get("pages").getAsJsonArray();
